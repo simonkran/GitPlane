@@ -1,0 +1,154 @@
+import { useState } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import { useAuth } from "@/hooks/useApi";
+
+export default function OnboardingPage() {
+  const [step, setStep] = useState(1);
+  const [orgName, setOrgName] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { register } = useAuth();
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      await register(orgName, email, password, name);
+      router.push("/clusters");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-brand-600">GitPlane</h1>
+          <p className="mt-2 text-gray-600">Set up your organization</p>
+        </div>
+
+        <div className="flex justify-center space-x-2 mb-8">
+          {[1, 2].map((s) => (
+            <div
+              key={s}
+              className={`w-3 h-3 rounded-full ${
+                s <= step ? "bg-brand-600" : "bg-gray-300"
+              }`}
+            />
+          ))}
+        </div>
+
+        <form className="space-y-6" onSubmit={handleRegister}>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Organization name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={orgName}
+                  onChange={(e) => setOrgName(e.target.value)}
+                  placeholder="Acme Corp"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-brand-500 focus:border-brand-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Your name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-brand-500 focus:border-brand-500"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                disabled={!orgName || !name}
+                className="w-full py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-50"
+              >
+                Continue
+              </button>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-brand-500 focus:border-brand-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-brand-500 focus:border-brand-500"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  At least 8 characters
+                </p>
+              </div>
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="flex-1 py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-50"
+                >
+                  {loading ? "Creating..." : "Create account"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          <p className="text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link href="/login" className="text-brand-600 hover:text-brand-500 font-medium">
+              Sign in
+            </Link>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+}
