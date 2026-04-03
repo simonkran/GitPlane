@@ -1,0 +1,43 @@
+api:
+  image:
+    repository: ghcr.io/simonkran/gitplane-api
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicas: 2
+  port: 8080
+  env:
+    GITPLANE_JWT_SECRET: ""  # Set via secret
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+web:
+  image:
+    repository: ghcr.io/simonkran/gitplane-web
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicas: 2
+  port: 3000
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+postgresql:
+  enabled: true
+  auth:
+    database: gitplane
+    username: gitplane
+    password: ""  # Set via secret
+
+ingress:
+  enabled: false
+  host: gitplane.example.com
+  tls: false
